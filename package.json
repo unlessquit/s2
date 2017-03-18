@@ -1,0 +1,29 @@
+{
+  "name": "s2",
+  "version": "1.0.0",
+  "description": "(HTTP) Storage Service",
+  "main": "index.js",
+  "scripts": {
+    "test": "standard",
+    "start": "nodemon --watch . index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unlessquit/s2.git"
+  },
+  "author": "Marian Schubert",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/unlessquit/s2/issues"
+  },
+  "homepage": "https://github.com/unlessquit/s2#readme",
+  "devDependencies": {
+    "nodemon": "^1.11.0",
+    "standard": "^9.0.2"
+  },
+  "dependencies": {
+    "express": "^4.15.2",
+    "mkdirp": "^0.5.1",
+    "murmurhash3": "^0.4.0"
+  }
+}
