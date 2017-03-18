@@ -4,9 +4,10 @@ var express = require('express')
 var app = express()
 var crypto = require('crypto')
 var mkdirp = require('mkdirp')
+var config = require('./config')
 
 var sha256 = s => crypto.createHash('sha1').update(s).digest('hex')
-var id2dir = id => path.join(id.slice(0, 2), id.slice(2, 4))
+var id2dir = id => path.join(config.dataDir, id.slice(0, 2), id.slice(2, 4))
 
 var rw = express.Router()
 
@@ -86,6 +87,6 @@ function sendFile (id, res) {
   })
 }
 
-app.listen(3000, function () {
-  console.log('Example app listening on port 3000!')
+app.listen(config.port, function () {
+  console.log('Example app listening on port ' + config.port + '!')
 })
