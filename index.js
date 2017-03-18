@@ -18,13 +18,28 @@ rw.put(/.+/, (req, res) => {
   mkdirp(dir, err => {
     if (err) {
       res.statusCode = 500
-      res.end(err)
+      res.end(JSON.stringify(err))
       return
     }
 
-    var writer = fs.createWriteStream(path.join(dir, id))
-    req.pipe(writer)
-    res.end(id + '\n')
+    var filename = path.join(dir, id)
+
+    var metadata = {
+      'key': key,
+      'content-type': req.headers['content-type']
+    }
+
+    fs.writeFile(filename + '.json', JSON.stringify(metadata), err => {
+      if (err) {
+        res.statusCode = 500
+        res.end(JSON.stringify(err))
+        return
+      }
+
+      var writer = fs.createWriteStream(filename)
+      req.pipe(writer)
+      res.end(id + '\n')
+    })
   })
 })
 
@@ -52,7 +67,23 @@ app.get('/:id/:name', (req, res) => {
 app.get('/', (req, res) => res.send('Hello World!'))
 
 function sendFile (id, res) {
-  fs.createReadStream(path.join(id2dir(id), id)).pipe(res)
+  var filename = path.join(id2dir(id), id)
+
+  fs.readFile(filename + '.json', (err, data) => {
+    if (err) {
+      res.statusCode = 500
+      res.end(JSON.stringify(err))
+      return
+    }
+
+    var metadata = JSON.parse(data)
+    var originalFilename = path.basename(metadata.key)
+
+    res.set('Content-Type', metadata['content-type'])
+    res.set('Content-Disposition', 'inline; filename="' +
+            originalFilename + '"')
+    fs.createReadStream(filename).pipe(res)
+  })
 }
 
 app.listen(3000, function () {
