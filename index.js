@@ -38,8 +38,7 @@ rw.put(/.+/, (req, res) => {
       }
 
       var writer = fs.createWriteStream(filename)
-      req.pipe(writer)
-      res.send(id + '\n')
+      req.pipe(writer).on('finish', () => res.send(id + '\n'))
     })
   })
 })
