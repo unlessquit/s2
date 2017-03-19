@@ -19,7 +19,7 @@ rw.put(/.+/, (req, res) => {
   mkdirp(dir, err => {
     if (err) {
       res.statusCode = 500
-      res.end(JSON.stringify(err))
+      res.send(JSON.stringify(err))
       return
     }
 
@@ -33,13 +33,13 @@ rw.put(/.+/, (req, res) => {
     fs.writeFile(filename + '.json', JSON.stringify(metadata), err => {
       if (err) {
         res.statusCode = 500
-        res.end(JSON.stringify(err))
+        res.send(JSON.stringify(err))
         return
       }
 
       var writer = fs.createWriteStream(filename)
       req.pipe(writer)
-      res.end(id + '\n')
+      res.send(id + '\n')
     })
   })
 })
@@ -73,7 +73,7 @@ function sendFile (id, res) {
   fs.readFile(filename + '.json', (err, data) => {
     if (err) {
       res.statusCode = 500
-      res.end(JSON.stringify(err))
+      res.send(JSON.stringify(err))
       return
     }
 
