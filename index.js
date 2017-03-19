@@ -86,6 +86,7 @@ function sendFile (id, res) {
   })
 }
 
+app.set('trust proxy', config.trustProxy)
 app.listen(config.port, function () {
   console.log('Example app listening on port ' + config.port + '!')
 })
