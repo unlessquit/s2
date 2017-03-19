@@ -3,11 +3,14 @@
 
 ## Usage
 
-### Create
+    npm install
+    npm start
+
+### Store object
 
     curl -X PUT -H "Content-Type: image/png" --data-binary @image.png http://localhost:3000/-/my/image.png
 
-### Fetch
+### Retrieve object
 
     curl http://localhost:3000/-/my/image.png
     curl http://localhost:3000/4e4cca9ce5267a5a25c276d0a9538af1a1855b1b
