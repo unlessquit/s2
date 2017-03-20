@@ -15,15 +15,24 @@ app.use(function (req, res, next) {
   next()
 })
 
+app.get('/', (req, res) => res.send('s2'))
 app.use('/app', express.static('public'))
 
 // Storage
 var key2id = s => crypto.createHash('sha1').update(s).digest('hex')
 var id2dir = id => path.join(config.dataDir, id.slice(0, 2), id.slice(2, 4))
 
-var rw = express.Router()
+app.get('/o/:id', (req, res) => sendFile(req.params.id, res))
+app.get('/o/:id/:name', (req, res) => sendFile(req.params.id, res))
 
-rw.put(/.+/, (req, res) => {
+app.get(/.*/, (req, res) => {
+  var key = req.path
+  var id = key2id(key)
+
+  sendFile(id, res)
+})
+
+app.put(/.+/, (req, res) => {
   var key = req.path
   var id = key2id(key)
   var dir = id2dir(id)
@@ -52,20 +61,6 @@ rw.put(/.+/, (req, res) => {
     })
   })
 })
-
-rw.get('/:key', (req, res) => {
-  var key = '/' + req.params.key
-  var id = key2id(key)
-
-  sendFile(id, res)
-})
-
-app.use('/-', rw)
-
-app.get('/:id', (req, res) => sendFile(req.params.id, res))
-app.get('/:id/:name', (req, res) => sendFile(req.params.id, res))
-
-app.get('/', (req, res) => res.send('Hello World!'))
 
 function sendFile (id, res) {
   var filename = path.join(id2dir(id), id)
