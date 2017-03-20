@@ -11,4 +11,4 @@ RUN mkdir -p /app
 COPY . /app
 
 WORKDIR /app
-CMD [ "npm", "start" ]
+CMD [ "node", "index.js" ]
