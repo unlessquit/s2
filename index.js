@@ -6,6 +6,18 @@ var crypto = require('crypto')
 var mkdirp = require('mkdirp')
 var config = require('./config')
 
+// Allow s2.js to do it's stuff
+app.use(function (req, res, next) {
+  res.set('Access-Control-Allow-Origin', '*')
+  res.set('Access-Control-Allow-Methods', 'GET, PUT')
+  res.set('Access-Control-Allow-Headers', 'Content-Type')
+
+  next()
+})
+
+app.use('/app', express.static('public'))
+
+// Storage
 var sha256 = s => crypto.createHash('sha1').update(s).digest('hex')
 var id2dir = id => path.join(config.dataDir, id.slice(0, 2), id.slice(2, 4))
 
@@ -86,6 +98,7 @@ function sendFile (id, res) {
   })
 }
 
+// Main
 app.set('trust proxy', config.trustProxy)
 app.listen(config.port, function () {
   console.log('Example app listening on port ' + config.port + '!')
