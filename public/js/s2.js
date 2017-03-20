@@ -6,8 +6,14 @@ function S2 (serverUrl) {
 
 S2.prototype.fetchJson = function (key, callback) {
   var req = new XMLHttpRequest()
-  req.addEventListener('load', function () {
-    callback(JSON.parse(this.responseText))
+
+  req.addEventListener('load', function (e) {
+    if (this.status !== 200) {
+      callback(req, null)
+      return
+    }
+
+    callback(null, JSON.parse(this.responseText))
   })
   req.open('GET', this.serverUrl + key)
   req.send()
@@ -16,8 +22,13 @@ S2.prototype.fetchJson = function (key, callback) {
 S2.prototype.storeJson = function (key, value, callback) {
   var req = new XMLHttpRequest()
   req.addEventListener('load', function () {
+    if (this.status !== 200) {
+      callback(req, null)
+      return
+    }
+
     if (callback) {
-      callback(this.responseText)
+      callback(null, this.responseText)
     }
   })
   req.open('PUT', this.serverUrl + key)

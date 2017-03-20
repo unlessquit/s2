@@ -24,8 +24,8 @@
     <script type="text/javascript">
       var s2 = new S2('https://some-s2-server')
 
-      s2.storeJson('/hello.json', {text: "Hello World!"}, function () {
-        s2.fetchJson('/hello.json', function (json) {
+      s2.storeJson('/hello.json', {text: "Hello World!"}, function (_err) {
+        s2.fetchJson('/hello.json', function (_err, json) {
             console.log(json.text)
         })
       })
