@@ -18,20 +18,19 @@ app.use(function (req, res, next) {
 app.use('/app', express.static('public'))
 
 // Storage
-var sha256 = s => crypto.createHash('sha1').update(s).digest('hex')
+var key2id = s => crypto.createHash('sha1').update(s).digest('hex')
 var id2dir = id => path.join(config.dataDir, id.slice(0, 2), id.slice(2, 4))
 
 var rw = express.Router()
 
 rw.put(/.+/, (req, res) => {
   var key = req.path
-  var id = sha256(key)
+  var id = key2id(key)
   var dir = id2dir(id)
 
   mkdirp(dir, err => {
     if (err) {
-      res.statusCode = 500
-      res.send(JSON.stringify(err))
+      error500(res, JSON.stringify(err))
       return
     }
 
@@ -44,8 +43,7 @@ rw.put(/.+/, (req, res) => {
 
     fs.writeFile(filename + '.json', JSON.stringify(metadata), err => {
       if (err) {
-        res.statusCode = 500
-        res.send(JSON.stringify(err))
+        error500(res, JSON.stringify(err))
         return
       }
 
@@ -57,24 +55,15 @@ rw.put(/.+/, (req, res) => {
 
 rw.get('/:key', (req, res) => {
   var key = '/' + req.params.key
-  var id = sha256(key)
+  var id = key2id(key)
 
   sendFile(id, res)
 })
 
 app.use('/-', rw)
 
-app.get('/:id', (req, res) => {
-  var id = req.params.id
-
-  sendFile(id, res)
-})
-
-app.get('/:id/:name', (req, res) => {
-  var id = req.params.id
-
-  sendFile(id, res)
-})
+app.get('/:id', (req, res) => sendFile(req.params.id, res))
+app.get('/:id/:name', (req, res) => sendFile(req.params.id, res))
 
 app.get('/', (req, res) => res.send('Hello World!'))
 
@@ -84,13 +73,11 @@ function sendFile (id, res) {
   fs.readFile(filename + '.json', (err, data) => {
     if (err) {
       if (err.code === 'ENOENT') {
-        res.statusCode = 404
-        res.send('Not Found')
+        error404(res)
         return
       }
 
-      res.statusCode = 500
-      res.send(JSON.stringify(err))
+      error500(res, JSON.stringify(err))
       return
     }
 
@@ -102,6 +89,15 @@ function sendFile (id, res) {
             originalFilename + '"')
     fs.createReadStream(filename).pipe(res)
   })
+}
+
+function error404 (res) {
+  res.status(404).send('Not Found')
+}
+
+function error500 (res, message) {
+  console.error('ERROR', message)
+  res.status(500).send('Internal Server Error')
 }
 
 // Main
