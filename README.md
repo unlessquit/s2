@@ -5,6 +5,10 @@
 
     npm install
     npm start
+    
+    or
+    
+    docker run -p 3000:80 unlessquit/s2
 
 ## From command line
 
