@@ -83,6 +83,12 @@ function sendFile (id, res) {
 
   fs.readFile(filename + '.json', (err, data) => {
     if (err) {
+      if (err.code === 'ENOENT') {
+        res.statusCode = 404
+        res.send('Not Found')
+        return
+      }
+
       res.statusCode = 500
       res.send(JSON.stringify(err))
       return
