@@ -19,7 +19,7 @@ S2.prototype.fetchJson = function (key, callback) {
   req.send()
 }
 
-S2.prototype.storeJson = function (key, value, callback) {
+S2.prototype.store = function (key, value, options, callback) {
   var req = new XMLHttpRequest()
   req.addEventListener('load', function () {
     if (this.status !== 200) {
@@ -28,10 +28,21 @@ S2.prototype.storeJson = function (key, value, callback) {
     }
 
     if (callback) {
-      callback(null, this.responseText)
+      callback(null, this.responseText.trim())
     }
   })
   req.open('PUT', this.serverUrl + key)
-  req.setRequestHeader('Content-Type', 'application/json; charset=utf-8')
-  req.send(JSON.stringify(value))
+  if (options['content-type']) {
+    req.setRequestHeader('Content-Type', options['content-type'])
+  }
+  req.send(value)
+}
+
+S2.prototype.storeJson = function (key, value, callback) {
+  return this.store(
+    key,
+    JSON.stringify(value),
+    {'content-type': 'application/json; charset=utf-8'},
+    callback
+  )
 }
