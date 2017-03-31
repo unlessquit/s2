@@ -1,4 +1,5 @@
 /* eslint-env node, mocha */
+var assert = require('assert')
 var request = require('supertest')
 var app = require('../src/app.js')
 var config = require('../src/config.js')
@@ -13,6 +14,8 @@ describe('homepage', function () {
       .expect('s2')
   })
 })
+
+var res2id = res => res.text.trim()
 
 describe('storage', function () {
   // Make sure we use clean storage for each test
@@ -47,6 +50,22 @@ describe('storage', function () {
 
       return client.put(key).send(content).expect(200)
         .then(res => client.get('/o/' + res2id(res)).expect(content).expect(200))
+    })
+  })
+
+  describe('as inbox', function () {
+    it('stores each PUT into its own object', function () {
+      var key = '/item'
+      var inbox = key + '?as=inbox'
+      var content1 = 'hello1'
+      var content2 = 'hello2'
+
+      var put1 = client.put(inbox).send(content1).expect(200)
+      var put2 = client.put(inbox).send(content2).expect(200)
+
+      return Promise.all([put1, put2]).then(([res1, res2]) => {
+        assert.notEqual(res2id(res1), res2id(res2))
+      })
     })
   })
 })

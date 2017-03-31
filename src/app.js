@@ -5,6 +5,7 @@ var app = express()
 var crypto = require('crypto')
 var mkdirp = require('mkdirp')
 var config = require('./config')
+var utils = require('./utils')
 
 // Allow s2.js to do it's stuff
 app.use(function (req, res, next) {
@@ -33,7 +34,8 @@ app.get(/.*/, (req, res) => {
 })
 
 app.put(/.+/, (req, res) => {
-  var key = req.path
+  var asInbox = req.query.as === 'inbox'
+  var key = asInbox ? path.join(req.path, utils.uuid()) : req.path
   var id = key2id(key)
   var dir = id2dir(id)
 
