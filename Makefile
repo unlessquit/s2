@@ -1,3 +1,5 @@
+.PHONY: test
+
 test: node_modules
 	npm test
 
