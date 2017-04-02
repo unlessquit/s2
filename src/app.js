@@ -88,10 +88,12 @@ function sendFile (id, res) {
 
     var metadata = JSON.parse(data)
     var originalFilename = path.basename(metadata.key)
+    var stat = fs.statSync(filename)
 
     res.set('Content-Type', metadata['content-type'])
     res.set('Content-Disposition', 'inline; filename="' +
             originalFilename + '"')
+    res.setHeader('Content-Length', stat.size)
     fs.createReadStream(filename).pipe(res)
   })
 }
