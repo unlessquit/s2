@@ -23,7 +23,9 @@ app.use('/app', express.static('public'))
 var key2id = s => crypto.createHash('sha1').update(s).digest('hex')
 var id2dir = id => path.join(config.dataDir, id.slice(0, 2), id.slice(2, 4))
 
+// TODO: use :id + ext (from content-type) as filename
 app.get('/o/:id', (req, res) => sendFile(req.params.id, res))
+// TODO: use :name as filename
 app.get('/o/:id/:name', (req, res) => sendFile(req.params.id, res))
 
 app.get(/.*/, (req, res) => {
