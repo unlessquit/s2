@@ -61,7 +61,13 @@ app.put(/.+/, (req, res) => {
       }
 
       var writer = fs.createWriteStream(filename)
-      req.pipe(writer).on('finish', () => res.send(id + '\n'))
+
+      var pipe = req.pipe(writer)
+      pipe.on('error', err => {
+        console.error('ERROR Failed to write', filename, 'Reason:', err)
+        error500(res, JSON.stringify(err))
+      })
+      pipe.on('finish', () => res.send(id + '\n'))
     })
   })
 })
