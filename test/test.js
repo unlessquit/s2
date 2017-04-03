@@ -44,6 +44,13 @@ describe('storage', function () {
       return client.get('/unknown').expect(404)
     })
 
+    it('returns ETag (UUID)', function () {
+      var key = '/key'
+      return client.put(key).send('content').then(() => {
+        return client.get(key).expect('ETag', /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/)
+      })
+    })
+
     describe('by ID (at /o/object-id)', function () {
       it('doesn\'t reveal sensitivie data (e.g., original filename)', function () {
         var key = '/item'
@@ -77,6 +84,18 @@ describe('storage', function () {
 
       return Promise.all([put1, put2]).then(([res1, res2]) => {
         assert.notEqual(res2id(res1), res2id(res2))
+      })
+    })
+  })
+
+  xdescribe('Concurrent update', function () {
+    it('fails if If-Match doesn\'t match resource\'s ETag', function () {
+      var key = '/key'
+      var putRes = client.put(key).send('content')
+
+      return putRes.then(() => {
+        return client.put(key).set('If-Match', 'invalid').send('content')
+          .expect(412) // Precondition Failed
       })
     })
   })

@@ -50,7 +50,8 @@ app.put(/.+/, (req, res) => {
 
     var metadata = {
       'key': key,
-      'content-type': req.headers['content-type']
+      'content-type': req.headers['content-type'],
+      'etag': utils.uuid()
     }
 
     fs.writeFile(filename + '.json', JSON.stringify(metadata), err => {
@@ -96,6 +97,7 @@ function sendFile (id, res, opts) {
     res.set('Content-Disposition', 'inline; filename="' +
             originalFilename + '"')
     res.setHeader('Content-Length', stat.size)
+    res.setHeader('ETag', metadata.etag || '0')
     fs.createReadStream(filename).pipe(res)
   })
 }
