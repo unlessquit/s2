@@ -1,5 +1,6 @@
 var fs = require('fs')
 var path = require('path')
+var mime = require('mime-types')
 var express = require('express')
 var app = express()
 var crypto = require('crypto')
@@ -24,9 +25,7 @@ var key2id = s => crypto.createHash('sha1').update(s).digest('hex')
 var id2dir = id => path.join(config.dataDir, id.slice(0, 2), id.slice(2, 4))
 
 // TODO: use :id + ext (from content-type) as filename
-app.get('/o/:id', (req, res) => sendFile(req.params.id, res))
-// TODO: use :name as filename
-app.get('/o/:id/:name', (req, res) => sendFile(req.params.id, res))
+app.get('/o/:id', (req, res) => sendFile(req.params.id, res, {anonymize: true}))
 
 app.get(/.*/, (req, res) => {
   var key = req.path
@@ -72,7 +71,8 @@ app.put(/.+/, (req, res) => {
   })
 })
 
-function sendFile (id, res) {
+function sendFile (id, res, opts) {
+  opts = opts || {}
   var filename = path.join(id2dir(id), id)
 
   fs.readFile(filename + '.json', (err, data) => {
@@ -87,7 +87,9 @@ function sendFile (id, res) {
     }
 
     var metadata = JSON.parse(data)
-    var originalFilename = path.basename(metadata.key)
+    var originalFilename = opts.anonymize
+        ? anonymizedFilename(id, metadata)
+        : path.basename(metadata.key)
     var stat = fs.statSync(filename)
 
     res.set('Content-Type', metadata['content-type'])
@@ -96,6 +98,14 @@ function sendFile (id, res) {
     res.setHeader('Content-Length', stat.size)
     fs.createReadStream(filename).pipe(res)
   })
+}
+
+function anonymizedFilename (id, metadata) {
+  var ext = mime.extension(metadata['content-type'])
+
+  return ext
+    ? id + '.' + ext
+    : id
 }
 
 function error404 (res) {

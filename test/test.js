@@ -44,12 +44,24 @@ describe('storage', function () {
       return client.get('/unknown').expect(404)
     })
 
-    it('can fetch object by its ID (at /o/object-id)', function () {
-      var key = '/item'
-      var content = 'object-id-content'
+    describe('by ID (at /o/object-id)', function () {
+      it('doesn\'t reveal sensitivie data (e.g., original filename)', function () {
+        var key = '/item'
+        var content = JSON.stringify({a: 10})
 
-      return client.put(key).send(content).expect(200)
-        .then(res => client.get('/o/' + res2id(res)).expect(content).expect(200))
+        return client.put(key).set('Content-Type', 'application/json').send(content).expect(200)
+          .then(putRes => {
+            var id = res2id(putRes)
+            var res = client.get('/o/' + id)
+
+            res.expect(200)
+            // Filename is anonymized (id + extension based on content-type)
+            var matchFilename = new RegExp('filename="' + id + '.json"')
+            res.expect('Content-Disposition', matchFilename)
+
+            return res
+          })
+      })
     })
   })
 
