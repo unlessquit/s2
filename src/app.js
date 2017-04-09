@@ -48,6 +48,14 @@ app.put(/.+/, (req, res) => {
     }
 
     var filename = path.join(dir, id)
+    var filenameMetadata = filename + '.json'
+
+    var m = utils.maybeGetMetadata(filenameMetadata)
+
+    if (m && req.headers['if-match'] && m.etag !== req.headers['if-match']) {
+      error412(res)
+      return
+    }
 
     var metadata = {
       'key': key,
@@ -55,7 +63,7 @@ app.put(/.+/, (req, res) => {
       'etag': utils.uuid()
     }
 
-    fs.writeFile(filename + '.json', JSON.stringify(metadata), err => {
+    fs.writeFile(filenameMetadata, JSON.stringify(metadata), err => {
       if (err) {
         error500(res, JSON.stringify(err))
         return
@@ -124,6 +132,10 @@ function notModified (res) {
 
 function error404 (res) {
   res.status(404).send('Not Found')
+}
+
+function error412 (res) {
+  res.status(412).send('Precondition failed')
 }
 
 function error500 (res, message) {

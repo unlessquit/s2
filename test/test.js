@@ -112,4 +112,26 @@ describe('storage', function () {
       })
     })
   })
+
+  describe('concurrent updates', function () {
+    it('succeed if If-Match matches resource\'s ETag', function () {
+      var key = '/key'
+
+      return client.put(key).send('original').then(() => {
+        return client.get(key).then(res => {
+          return client.put(key).set('If-Match', res.headers.etag).send('new')
+            .expect(200)
+        })
+      })
+    })
+
+    it('fail if If-Match doesn\'t match resource\'s ETag', function () {
+      var key = '/key'
+
+      return client.put(key).send('content').then(() => {
+        return client.put(key).set('If-Match', 'invalid').send('content')
+          .expect(412) // Precondition Failed
+      })
+    })
+  })
 })
