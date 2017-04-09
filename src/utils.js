@@ -6,4 +6,21 @@ function uuid () {
   })
 }
 
+/**
+ * Strip content-* header fields.
+ *
+ * Borrowed from send npm package
+ */
+function removeContentHeaderFields (res) {
+  var headers = Object.keys(res._headers || {})
+
+  for (var i = 0; i < headers.length; i++) {
+    var header = headers[i]
+    if (header.substr(0, 8) === 'content-' && header !== 'content-location') {
+      res.removeHeader(header)
+    }
+  }
+}
+
 exports.uuid = uuid
+exports.removeContentHeaderFields = removeContentHeaderFields

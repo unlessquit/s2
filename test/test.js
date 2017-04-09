@@ -44,6 +44,38 @@ describe('storage', function () {
       return client.get('/unknown').expect(404)
     })
 
+    it('returns ETag (UUID)', function () {
+      var key = '/key'
+      var uuidRe = /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
+
+      // First PUT
+      return client.put(key).send('content1').then(() => {
+        return client.get(key).expect('ETag', uuidRe)
+          .then(res1 => {
+            var etag1 = res1.headers.etag
+            // Second PUT
+            return client.put(key).send('content2').then(() => {
+              return client.get(key).expect('ETag', uuidRe)
+                .then(res2 => {
+                  var etag2 = res2.headers.etag
+                  // ETag-s shouldn't match
+                  assert.notEqual(etag1, etag2)
+                })
+            })
+          })
+      })
+    })
+
+    it('returns "Not Modified" if correct If-None-Match is provided', function () {
+      var key = '/key'
+
+      return client.put(key).send('some content').then(() => {
+        return client.get(key)
+          .then(res => client.get(key).set('If-None-Match', res.headers.etag)
+                .expect(304)) // not modified
+      })
+    })
+
     describe('by ID (at /o/object-id)', function () {
       it('doesn\'t reveal sensitivie data (e.g., original filename)', function () {
         var key = '/item'

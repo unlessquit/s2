@@ -2,6 +2,7 @@ var fs = require('fs')
 var path = require('path')
 var mime = require('mime-types')
 var express = require('express')
+var fresh = require('fresh')
 var app = express()
 var crypto = require('crypto')
 var mkdirp = require('mkdirp')
@@ -25,13 +26,13 @@ var key2id = s => crypto.createHash('sha1').update(s).digest('hex')
 var id2dir = id => path.join(config.dataDir, id.slice(0, 2), id.slice(2, 4))
 
 // TODO: use :id + ext (from content-type) as filename
-app.get('/o/:id', (req, res) => sendFile(req.params.id, res, {anonymize: true}))
+app.get('/o/:id', (req, res) => sendFile(req.params.id, req, res, {anonymize: true}))
 
 app.get(/.*/, (req, res) => {
   var key = req.path
   var id = key2id(key)
 
-  sendFile(id, res)
+  sendFile(id, req, res)
 })
 
 app.put(/.+/, (req, res) => {
@@ -50,7 +51,8 @@ app.put(/.+/, (req, res) => {
 
     var metadata = {
       'key': key,
-      'content-type': req.headers['content-type']
+      'content-type': req.headers['content-type'],
+      'etag': utils.uuid()
     }
 
     fs.writeFile(filename + '.json', JSON.stringify(metadata), err => {
@@ -71,7 +73,7 @@ app.put(/.+/, (req, res) => {
   })
 })
 
-function sendFile (id, res, opts) {
+function sendFile (id, req, res, opts) {
   opts = opts || {}
   var filename = path.join(id2dir(id), id)
 
@@ -96,6 +98,12 @@ function sendFile (id, res, opts) {
     res.set('Content-Disposition', 'inline; filename="' +
             originalFilename + '"')
     res.setHeader('Content-Length', stat.size)
+    res.setHeader('ETag', metadata.etag || 'n/a')
+    if (fresh(req.headers, res._headers)) {
+      notModified(res)
+      return
+    }
+
     fs.createReadStream(filename).pipe(res)
   })
 }
@@ -106,6 +114,12 @@ function anonymizedFilename (id, metadata) {
   return ext
     ? id + '.' + ext
     : id
+}
+
+function notModified (res) {
+  utils.removeContentHeaderFields(res)
+  res.statusCode = 304
+  res.end()
 }
 
 function error404 (res) {
