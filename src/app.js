@@ -8,6 +8,7 @@ var crypto = require('crypto')
 var mkdirp = require('mkdirp')
 var config = require('./config')
 var utils = require('./utils')
+var http = require('./http')
 
 // Allow s2.js to do it's stuff
 app.use(function (req, res, next) {
@@ -43,7 +44,7 @@ app.put(/.+/, (req, res) => {
 
   mkdirp(dir, err => {
     if (err) {
-      error500(res, JSON.stringify(err))
+      http.error500(res, JSON.stringify(err))
       return
     }
 
@@ -53,7 +54,7 @@ app.put(/.+/, (req, res) => {
     var m = utils.maybeGetMetadata(filenameMetadata)
 
     if (m && req.headers['if-match'] && m.etag !== req.headers['if-match']) {
-      error412(res)
+      http.error412(res)
       return
     }
 
@@ -65,7 +66,7 @@ app.put(/.+/, (req, res) => {
 
     fs.writeFile(filenameMetadata, JSON.stringify(metadata), err => {
       if (err) {
-        error500(res, JSON.stringify(err))
+        http.error500(res, JSON.stringify(err))
         return
       }
 
@@ -74,7 +75,7 @@ app.put(/.+/, (req, res) => {
       var pipe = req.pipe(writer)
       pipe.on('error', err => {
         console.error('ERROR Failed to write', filename, 'Reason:', err)
-        error500(res, JSON.stringify(err))
+        http.error500(res, JSON.stringify(err))
       })
       pipe.on('finish', () => res.send(id + '\n'))
     })
@@ -88,11 +89,11 @@ function sendFile (id, req, res, opts) {
   fs.readFile(filename + '.json', (err, data) => {
     if (err) {
       if (err.code === 'ENOENT') {
-        error404(res)
+        http.error404(res)
         return
       }
 
-      error500(res, JSON.stringify(err))
+      http.error500(res, JSON.stringify(err))
       return
     }
 
@@ -108,7 +109,7 @@ function sendFile (id, req, res, opts) {
     res.setHeader('Content-Length', stat.size)
     res.setHeader('ETag', metadata.etag || 'n/a')
     if (fresh(req.headers, res._headers)) {
-      notModified(res)
+      http.notModified(res)
       return
     }
 
@@ -122,25 +123,6 @@ function anonymizedFilename (id, metadata) {
   return ext
     ? id + '.' + ext
     : id
-}
-
-function notModified (res) {
-  utils.removeContentHeaderFields(res)
-  res.statusCode = 304
-  res.end()
-}
-
-function error404 (res) {
-  res.status(404).send('Not Found')
-}
-
-function error412 (res) {
-  res.status(412).send('Precondition failed')
-}
-
-function error500 (res, message) {
-  console.error('ERROR', message)
-  res.status(500).send('Internal Server Error')
 }
 
 module.exports = app
