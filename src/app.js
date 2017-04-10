@@ -69,8 +69,9 @@ app.put(/.+/, (req, res) => {
         return
       }
 
-      var writer = fs.createWriteStream(filename)
+      res.set('ETag', metadata.etag)
 
+      var writer = fs.createWriteStream(filename)
       var pipe = req.pipe(writer)
       pipe.on('error', err => {
         console.error('ERROR Failed to write', filename, 'Reason:', err)
