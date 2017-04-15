@@ -5,6 +5,47 @@
     <script type="text/javascript">
       var s2 = new S2(document.location.origin)
     </script>
+
+    <script type="text/javascript">
+      function smokeTest() {
+        var ts = new Date().getTime()
+        var key = '/smoke-test-' + ts + '.json'
+        console.log('Going to use', document.location.origin + key)
+
+        s2.fetchJson(key, function (err, res) {
+          if (!err || err.status != 404) {
+            console.error('Expected Not Found', err)
+            return
+          }
+
+          var v1 = {counter: 1}
+          s2.storeJson(key, v1, function (err, res) {
+            if (err) {
+              console.error('Expected success', err)
+              return
+            }
+
+            var id = res
+            s2.fetchJson(key, function (err, res) {
+              if (err) {
+                console.error('Expected success', err)
+                return
+              }
+
+              if (v1.counter != res.counter) {
+                console.error('Expected correct JSON')
+                console.error('Expected:', v1)
+                console.error('Actual:  ', res)
+                return
+              }
+
+              console.log('%cTests passed!', 'color: #0A0')
+            })
+          })
+        })
+
+      }
+    </script>
   </head>
 
   <body>
