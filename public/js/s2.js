@@ -46,3 +46,19 @@ S2.prototype.storeJson = function (key, value, callback) {
     callback
   )
 }
+
+S2.prototype.updateJson = function (key, updateFn, callback) {
+  var s2 = this
+
+  s2.fetchJson(key, function (err, original) {
+    if (err) {
+      callback(err, null)
+      return
+    }
+
+    var updated = updateFn(original)
+    s2.storeJson(key, updated, function (err, res) {
+      callback(err, updated)
+    })
+  })
+}

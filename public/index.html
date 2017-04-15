@@ -39,7 +39,30 @@
                 return
               }
 
-              console.log('%cTests passed!', 'color: #0A0')
+              var incCounter = function (x) {
+                x.counter = x.counter + 1
+                return x
+              }
+
+              s2.updateJson(key, incCounter, function (err, res) {
+                if (err) {
+                  console.error('Expected success', err)
+                  return
+                }
+
+                var v2 = Object.assign({}, v1)
+                v2.counter = v2.counter + 1
+
+                if (v2.counter != res.counter) {
+                  console.error('Expected correct JSON')
+                  console.error('Expected:', v2)
+                  console.error('Actual:  ', res)
+                  return
+                }
+
+                console.log('%cTests passed!', 'color: #0A0')
+              })
+
             })
           })
         })
