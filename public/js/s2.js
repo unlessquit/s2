@@ -9,7 +9,7 @@ S2.prototype.fetchJson = function (key, callback) {
 
   req.addEventListener('load', function (e) {
     if (this.status !== 200) {
-      callback(req, null)
+      callback(this, null)
       return
     }
 
@@ -23,7 +23,7 @@ S2.prototype.store = function (key, value, options, callback) {
   var req = new XMLHttpRequest()
   req.addEventListener('load', function () {
     if (this.status !== 200) {
-      callback(req, null)
+      callback(this, null)
       return
     }
 
