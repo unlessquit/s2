@@ -66,12 +66,10 @@ function sendFile (obj, req, res, opts) {
     return
   }
 
-  var stat = fs.statSync(obj.filename)
-
   res.set('Content-Type', obj.metadata['content-type'])
   res.set('Content-Disposition', 'inline; filename="' +
           (opts.anonymize ? obj.anonymizedName : obj.name) + '"')
-  res.setHeader('Content-Length', stat.size)
+  res.setHeader('Content-Length', obj.metadata.size)
   res.setHeader('ETag', obj.metadata.etag || 'n/a')
   if (fresh(req.headers, res._headers)) {
     http.notModified(res)

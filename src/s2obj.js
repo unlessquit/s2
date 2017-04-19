@@ -24,7 +24,12 @@ class S2Obj {
           return
         }
 
-        obj.metadata = JSON.parse(data)
+        var metadata = JSON.parse(data)
+
+        var stat = fs.statSync(obj.filename)
+        metadata.size = stat.size
+
+        obj.metadata = metadata
         resolve(obj)
       })
     })
