@@ -79,6 +79,10 @@ class S2Obj {
     return true
   }
 
+  createReadStream () {
+    return fs.createReadStream(this.filename)
+  }
+
   write (metadata, src) {
     return new Promise((resolve, reject) => {
       mkdirp(this.dir, err => {

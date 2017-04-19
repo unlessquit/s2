@@ -1,4 +1,3 @@
-var fs = require('fs')
 var path = require('path')
 var express = require('express')
 var fresh = require('fresh')
@@ -76,7 +75,7 @@ function sendFile (obj, req, res, opts) {
     return
   }
 
-  fs.createReadStream(obj.filename).pipe(res)
+  obj.createReadStream().pipe(res)
 }
 
 module.exports = app
