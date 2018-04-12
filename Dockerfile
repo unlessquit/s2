@@ -16,6 +16,7 @@ RUN npm install
 
 COPY src/ /app/src/
 COPY public/ /app/public/
+COPY test/ /app/test/
 COPY index.js /app/
 
 CMD [ "node", "index.js" ]
