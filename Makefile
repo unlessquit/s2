@@ -1,11 +1,10 @@
 .PHONY: test
 
-test: node_modules
-	npm test
-
-release: node_modules
+image:
 	docker build -t unlessquit/s2 .
-	docker push unlessquit/s2
 
-node_modules: package.json
-	npm install
+test: image
+	docker run -v $(CURDIR)/test:/app/test unlessquit/s2 npm test
+
+release:
+	docker push unlessquit/s2

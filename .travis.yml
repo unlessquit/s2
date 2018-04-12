@@ -1,18 +1,17 @@
 language: node_js
 node_js:
-  - '6'
+  - '9'
+services:
+  - docker
+sudo: required
 
 ## test
 script:
   - make test
 
 ## deploy
-sudo: required
-services:
-  - docker
 deploy:
   provider: script
-  skip_cleanup: true # use exactly same stuff for deploy as for test
   script: docker login -u $DOCKER_USER -p $DOCKER_PASS && make release
   on:
     branch: master
