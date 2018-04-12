@@ -3,7 +3,7 @@
 image:
 	docker build -t unlessquit/s2 .
 
-test: image
+test:
 	docker run -v $(CURDIR)/test:/app/test unlessquit/s2 npm test
 
 release:
